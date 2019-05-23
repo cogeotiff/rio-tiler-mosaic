@@ -1,5 +1,3 @@
 """rio-tiler-mosaic: Create tiles from multiple observations."""
 
-import pkg_resources
-
-version = pkg_resources.get_distribution(__package__).version
+__version__ = "0.0.1dev"
