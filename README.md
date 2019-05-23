@@ -1,15 +1,13 @@
 # rio-tiler-mosaic
 
 [![Packaging status](https://badge.fury.io/py/rio-tiler-mosaic.svg)](https://badge.fury.io/py/rio-tiler-mosaic)
-[![CircleCI](https://circleci.com/gh/cogeotiff/rio-tiler-mosaic.svg?style=svg)](https://codecov.io/gh/cogeotiff/rio-tiler-mosaic)
-[![codecov](https://codecov.io/gh/cogeotiff/rio-tiler-mosaic/branch/master/graph/badge.svg)](https://circleci.com/gh/cogeotiff/rio-tiler-mosaic)
+[![CircleCI](https://circleci.com/gh/cogeotiff/rio-tiler-mosaic.svg?style=svg)](https://circleci.com/gh/cogeotiff/rio-tiler-mosaic)
+[![codecov](https://codecov.io/gh/cogeotiff/rio-tiler-mosaic/branch/master/graph/badge.svg)](https://codecov.io/gh/cogeotiff/rio-tiler-mosaic)
 
 A rio-tiler plugin for creating tiles from multiple observations.
 
 ![](https://user-images.githubusercontent.com/10407788/57466726-304f5880-724f-11e9-9969-bec4ce940e07.png)
 
-
-https://medium.com/devseed/cog-talk-part-1-whats-new-941facbcd3d1
 
 ## Install
 
