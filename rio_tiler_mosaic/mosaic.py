@@ -1,4 +1,4 @@
-"""rio_tiler.mosaic: create tile from multiple assets."""
+"""rio_tiler_mosaic.mosaic: create tile from multiple assets."""
 
 import os
 import multiprocessing
@@ -59,7 +59,7 @@ def mosaic_tiler(
     pixel_selection : str, optional
         Best pixel selection method (default: "first").
     kwargs: dict, optional
-        Rio-tiler tiler module specific otions.
+        Rio-tiler tiler module specific options.
 
     Returns
     -------
