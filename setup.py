@@ -10,9 +10,15 @@ extra_reqs = {
     "dev": ["pytest", "pytest-cov", "pre-commit"],
 }
 
+
+with open("README.md") as f:
+    long_description = f.read()
+
 setup(
     name="rio-tiler-mosaic",
     version="0.0.1dev",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     description=u"""A rio-tiler plugin to create mosaic tiles.""",
     classifiers=[
         "Intended Audience :: Information Technology",
