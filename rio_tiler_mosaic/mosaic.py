@@ -9,6 +9,9 @@ import numpy
 
 from rio_tiler.utils import _chunks
 
+from rio_tiler_mosaic.methods.base import MosaicMethodBase
+from rio_tiler_mosaic.methods.defaults import FirstMethod
+
 
 def _filter_futures(tasks):
     """
@@ -32,14 +35,7 @@ def _filter_futures(tasks):
 
 
 def mosaic_tiler(
-    assets,
-    tile_x,
-    tile_y,
-    tile_z,
-    tiler,
-    pixel_selection="first",
-    chunk_size=5,
-    **kwargs
+    assets, tile_x, tile_y, tile_z, tiler, pixel_selection=None, chunk_size=5, **kwargs
 ):
     """
     Create mercator tile from multiple observations.
@@ -56,8 +52,9 @@ def mosaic_tiler(
         Mercator tile ZOOM level.
     tiler: function
         Rio-tiler's tiler function (e.g rio_tiler.landsat8.tile)
-    pixel_selection : str, optional
-        Best pixel selection method (default: "first").
+    pixel_selection: MosaicMethod, optional
+        Instance of MosaicMethodBase class.
+        default: "rio_tiler_mosaic.methods.defaults.FirstMethod".
     kwargs: dict, optional
         Rio-tiler tiler module specific options.
 
@@ -67,12 +64,14 @@ def mosaic_tiler(
         Return tile and mask data.
 
     """
-    if pixel_selection == "last":
-        assets = list(reversed(assets))
-        pixel_selection = "first"
+    if pixel_selection is None:
+        pixel_selection = FirstMethod()
 
-    tile = None
-    mask = None
+    if not isinstance(pixel_selection, MosaicMethodBase):
+        raise Exception(
+            "Mosaic filling algorithm should be an instance of"
+            "'rio_tiler_mosaic.methods.base.MosaicMethodBase'"
+        )
 
     _tiler = partial(tiler, tile_x=tile_x, tile_y=tile_y, tile_z=tile_z, **kwargs)
     max_threads = int(os.environ.get("MAX_THREADS", multiprocessing.cpu_count() * 5))
@@ -85,29 +84,8 @@ def mosaic_tiler(
             t = numpy.ma.array(t)
             t.mask = m == 0
 
-            if tile is None:
-                tile = t
+            pixel_selection.feed(t)
+            if pixel_selection.is_done:
+                return pixel_selection.data
 
-            if pixel_selection == "darkest":
-                pidex = numpy.bitwise_and(t.data < tile.data, ~t.mask) | tile.mask
-
-            elif pixel_selection == "brightest":
-                pidex = numpy.bitwise_and(t.data > tile.data, ~t.mask) | tile.mask
-
-            elif pixel_selection == "first":
-                pidex = tile.mask & ~t.mask
-
-            else:
-                pidex = tile.mask & ~t.mask
-
-            mask = numpy.where(pidex, t.mask, tile.mask)
-            tile = numpy.ma.where(pidex, t, tile)
-            tile.mask = mask
-
-            if not numpy.ma.is_masked(tile) and pixel_selection == "first":
-                return tile.data, ~tile.mask[0] * 255
-
-    if tile is not None:
-        return tile.data, ~tile.mask[0] * 255
-
-    return tile, mask
+    return pixel_selection.data

@@ -25,15 +25,18 @@ $ pip install -e .
 
 ![](https://user-images.githubusercontent.com/10407788/57467798-30505800-7251-11e9-9bde-6f50801dc851.png)
 
-The goal of this rio-tiler plugin is to create tiles from multiple observations. Because user might want to choose which pixel goes on top of the tile, this plugin comes with 4 differents options:
-- **first**: takes the first pixel received
-- **last**: takes the last pixel received (works by inverting the order of the assets)
-- **brightest**: loop though all the assets and return the highest value 
-- **darkest**: loop though all the assets and return the lowest value
+The goal of this rio-tiler plugin is to create tiles from multiple observations. 
+
+Because user might want to choose which pixel goes on top of the tile, this plugin comes with 5 differents `pixel selection` algorithms:
+- **First**: takes the first pixel received
+- **Highest**: loop though all the assets and return the highest value 
+- **Lowest**: loop though all the assets and return the lowest value
+- **Mean**: compute the mean value of the whole stack
+- **Median**: compute the median value of the whole stack
 
 ### API
 
-`mosaic_tiler(assets, tile_x, tile_y, tile_z, tiler, pixel_selection='scene', chunk_size=5, kwargs)`
+`mosaic_tiler(assets, tile_x, tile_y, tile_z, tiler, pixel_selection=None, chunk_size=5, kwargs)`
 
 Inputs:
 - assets : list, tuple of rio-tiler compatible assets (url or sceneid)
@@ -41,12 +44,70 @@ Inputs:
 - tile_y : Mercator tile Y index. 
 - tile_z : Mercator tile ZOOM level. 
 - tiler: Rio-tiler's tiler function (e.g rio_tiler.landsat8.tile) 
-- pixel_selection : optional **pixel selection** method (default: "first"). 
+- pixel_selection : optional **pixel selection** algorithm (default: "first"). 
 - kwargs: Rio-tiler tiler module specific otions.
 
 Returns:
 - tile, mask : tuple of ndarray Return tile and mask data.
 
+#### Examples
+
+```python
+from rio_tiler.main import tile as cogTiler
+from rio_tiler_mosaic.mosaic import mosaic_tiler
+from rio_tiler_mosaic.methods import defaults
+
+assets = ["mytif1.tif", "mytif2.tif", "mytif3.tif"]
+tile = (1000, 1000, 9)
+x, y, z = tile
+
+# Use Default First value method
+mosaic_tiler(assets, x, y, z, cogTiler)
+
+# Use Highest value: defaults.HighestMethod()
+mosaic_tiler(
+    assets,
+    x,
+    y,
+    z,
+    cogTiler,
+    pixel_selection=defaults.HighestMethod()
+)
+
+# Use Lowest value: defaults.LowestMethod()
+mosaic_tiler(
+    assets,
+    x,
+    y,
+    z,
+    cogTiler,
+    pixel_selection=defaults.LowestMethod()
+)
+```
+
+### The `MosaicMethod` interface
+
+the `rio-tiler-mosaic.methods.base.MosaicMethodBase` class defines an abstract 
+interface for all `pixel selection` methods allowed by `rio-tiler-mosaic`. its methods and properties are:
+
+- `is_done`: property, returns a boolean indicating if the process is done filling the tile
+- `data`: property, returns the output **tile** and **mask** numpy arrays
+- `feed(tile: numpy.ma.ndarray)`: method, update the tile
+
+The MosaicMethodBase class is not intended to be used directly but as an abstract base class, a template for concrete implementations.
+
+#### Writing your own Pixel Selection method
+
+The rules for writing your own `pixel selection algorithm` class are as follows:
+
+- Must inherit from MosaicMethodBase
+- Must provide concrete implementations of all the above methods.
+
+See [rio_tiler_mosaic.methods.defaults](/rio_tiler_mosaic/defaults.py) classes for examples.
+
+## Example
+
+See [/example](/example)
 
 ## Contribution & Development
 

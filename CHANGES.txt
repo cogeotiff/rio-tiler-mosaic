@@ -1,0 +1,12 @@
+0.0.1dev1 (2019-07-18)
+--------------------
+
+**Breacking Changes**
+
+- refactor pixel selection method to use MosaicMethodBase abstract class (#1)
+- change method names (#2)
+
+0.0.1dev0 (2019-05-23)
+------------------
+
+- Initial release
