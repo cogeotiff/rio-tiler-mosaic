@@ -61,11 +61,18 @@ class LowestMethod(MosaicMethodBase):
 class MeanMethod(MosaicMethodBase):
     """Feed the mosaic tile with the Mean pixel value."""
 
+    def __init__(self, enforce_data_type=True):
+        """Overwrite base and init Mean method."""
+        super(MeanMethod, self).__init__()
+        self.enforce_data_type = enforce_data_type
+
     @property
     def data(self):
         """Return data and mask."""
         if self.tile is not None:
             tile = numpy.ma.mean(self.tile, axis=0)
+            if self.enforce_data_type:
+                tile = tile.astype(self.tile.dtype)
             return tile.data, ~tile.mask[0] * 255
         else:
             return None, None
@@ -82,11 +89,18 @@ class MeanMethod(MosaicMethodBase):
 class MedianMethod(MosaicMethodBase):
     """Feed the mosaic tile with the Median pixel value."""
 
+    def __init__(self, enforce_data_type=True):
+        """Overwrite base and init Median method."""
+        super(MedianMethod, self).__init__()
+        self.enforce_data_type = enforce_data_type
+
     @property
     def data(self):
         """Return data and mask."""
         if self.tile is not None:
             tile = numpy.ma.median(self.tile, axis=0)
+            if self.enforce_data_type:
+                tile = tile.astype(self.tile.dtype)
             return tile.data, ~tile.mask[0] * 255
         else:
             return None, None

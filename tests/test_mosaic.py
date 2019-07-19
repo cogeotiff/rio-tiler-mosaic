@@ -91,11 +91,35 @@ def test_mosaic_tiler():
         assets, x, y, z, cogTiler, pixel_selection=defaults.MeanMethod()
     )
     assert m.all()
+    assert t[0][-1][-1] == 7822
+
+    # Test mean pixel selection
+    t, m = mosaic.mosaic_tiler(
+        assets,
+        x,
+        y,
+        z,
+        cogTiler,
+        pixel_selection=defaults.MeanMethod(enforce_data_type=False),
+    )
+    assert m.all()
     assert t[0][-1][-1] == 7822.5
 
     # Test median pixel selection
     t, m = mosaic.mosaic_tiler(
         assets, x, y, z, cogTiler, pixel_selection=defaults.MedianMethod()
+    )
+    assert m.all()
+    assert t[0][-1][-1] == 7822
+
+    # Test median pixel selection
+    t, m = mosaic.mosaic_tiler(
+        assets,
+        x,
+        y,
+        z,
+        cogTiler,
+        pixel_selection=defaults.MedianMethod(enforce_data_type=False),
     )
     assert m.all()
     assert t[0][-1][-1] == 7822.5
