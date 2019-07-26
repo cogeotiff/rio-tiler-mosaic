@@ -1,7 +1,8 @@
 0.0.1dev3 (TBD)
 ---------------
 - Fix bad tile stacking creating invalid tile shapes for mean and median method.
-- Add stdev method
+- Add stdev method (#7)
+- Allow "chunck_size" option to control the number of asset to process per loop (#6)
 
 0.0.1dev2 (2019-07-18)
 --------------------

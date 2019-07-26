@@ -35,7 +35,14 @@ def _filter_futures(tasks):
 
 
 def mosaic_tiler(
-    assets, tile_x, tile_y, tile_z, tiler, pixel_selection=None, chunk_size=5, **kwargs
+    assets,
+    tile_x,
+    tile_y,
+    tile_z,
+    tiler,
+    pixel_selection=None,
+    chunk_size=None,
+    **kwargs
 ):
     """
     Create mercator tile from multiple observations.
@@ -55,6 +62,8 @@ def mosaic_tiler(
     pixel_selection: MosaicMethod, optional
         Instance of MosaicMethodBase class.
         default: "rio_tiler_mosaic.methods.defaults.FirstMethod".
+    chunk_size: int, optional
+        Control the number of asset to process per loop (default = MAX_THREADS).
     kwargs: dict, optional
         Rio-tiler tiler module specific options.
 
@@ -75,8 +84,10 @@ def mosaic_tiler(
 
     _tiler = partial(tiler, tile_x=tile_x, tile_y=tile_y, tile_z=tile_z, **kwargs)
     max_threads = int(os.environ.get("MAX_THREADS", multiprocessing.cpu_count() * 5))
+    if not chunk_size:
+        chunk_size = max_threads
 
-    for chunks in _chunks(assets, max_threads):
+    for chunks in _chunks(assets, chunk_size):
         with futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
             future_tasks = [executor.submit(_tiler, asset) for asset in chunks]
 

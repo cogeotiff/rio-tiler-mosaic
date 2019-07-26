@@ -45,6 +45,7 @@ Inputs:
 - tile_z : Mercator tile ZOOM level. 
 - tiler: Rio-tiler's tiler function (e.g rio_tiler.landsat8.tile) 
 - pixel_selection : optional **pixel selection** algorithm (default: "first"). 
+- chunk_size: optional, control the number of asset to process per loop.
 - kwargs: Rio-tiler tiler module specific otions.
 
 Returns:
@@ -104,6 +105,22 @@ The rules for writing your own `pixel selection algorithm` class are as follows:
 - Must provide concrete implementations of all the above methods.
 
 See [rio_tiler_mosaic.methods.defaults](/rio_tiler_mosaic/defaults.py) classes for examples.
+
+#### Smart Multi-Threading 
+
+When dealing with an important number of image, you might not want to process the whole stack, especially if the pixel selection method stops when the tile is filled. To allow better optimization, `rio-tiler-mosaic` is fetching the tiles in parallel (threads) but to limit the number of files we also embeded the fetching in a loop (creating 2 level of processing): 
+
+```python
+assets = ["1.tif", "2.tif", "3.tif", "4.tif", "5.tif", "6.tif"]
+
+# 1st level loop - Creates chuncks of assets
+for chunks in _chunks(assets, chunk_size):
+    # 2nd level loop - Uses threads for process each `chunck`
+    with futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
+        future_tasks = [executor.submit(_tiler, asset) for asset in chunks]
+```
+
+By default the chunck_size is equal to max_threads ([default](https://github.com/cogeotiff/rio-tiler-mosaic/blob/4a4d188a9b0fefbf244af3cf52cf2695db7e0cf1/rio_tiler_mosaic/mosaic.py#L77))
 
 ## Example
 
