@@ -90,6 +90,8 @@ def test_mosaic_tiler():
     t, m = mosaic.mosaic_tiler(
         assets, x, y, z, cogTiler, pixel_selection=defaults.MeanMethod()
     )
+    assert t.shape == (3, 256, 256)
+    assert m.shape == (256, 256)
     assert m.all()
     assert t[0][-1][-1] == 7822
 
@@ -109,6 +111,8 @@ def test_mosaic_tiler():
     t, m = mosaic.mosaic_tiler(
         assets, x, y, z, cogTiler, pixel_selection=defaults.MedianMethod()
     )
+    assert t.shape == (3, 256, 256)
+    assert m.shape == (256, 256)
     assert m.all()
     assert t[0][-1][-1] == 7822
 
@@ -131,3 +135,19 @@ def test_mosaic_tiler():
             pass
 
         mosaic.mosaic_tiler(assets, x, y, z, cogTiler, pixel_selection=aClass())
+
+
+def test_mosaic_tiler_Stdev():
+    """Test Stdev mosaic methods."""
+    tile1, mask1 = cogTiler(assets[0], x, y, z)
+    tile2, mask2 = cogTiler(assets[1], x, y, z)
+
+    t, m = mosaic.mosaic_tiler(
+        assets, x, y, z, cogTiler, pixel_selection=defaults.StdevMethod()
+    )
+    assert t.shape == (3, 256, 256)
+    assert m.shape == (256, 256)
+    assert m.all()
+    assert t[0][-1][-1] == numpy.std([tile1[0][-1][-1], tile2[0][-1][-1]])
+    assert t[1][-1][-1] == numpy.std([tile1[1][-1][-1], tile2[1][-1][-1]])
+    assert t[2][-1][-1] == numpy.std([tile1[2][-1][-1], tile2[2][-1][-1]])
