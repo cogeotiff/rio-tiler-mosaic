@@ -16,7 +16,7 @@ with open("README.md") as f:
 
 setup(
     name="rio-tiler-mosaic",
-    version="0.0.1dev2",
+    version="0.0.1dev3",
     long_description=long_description,
     long_description_content_type="text/markdown",
     description=u"""A rio-tiler plugin to create mosaic tiles.""",
