@@ -1,3 +1,7 @@
+0.0.1dev4 (2020-04-22)
+----------------------
+- allow rio-tiler >=1.2
+
 0.0.1dev3 (2019-07-25)
 ----------------------
 - Fix bad tile stacking creating invalid tile shapes for mean and median method.
@@ -11,7 +15,6 @@ from Mean and Median method#4
 
 0.0.1dev1 (2019-07-18)
 --------------------
-
 **Breacking Changes**
 
 - refactor pixel selection method to use MosaicMethodBase abstract class (#1)
@@ -19,5 +22,4 @@ from Mean and Median method#4
 
 0.0.1dev0 (2019-05-23)
 ------------------
-
 - Initial release
