@@ -129,7 +129,7 @@ By default the chunck_size is equal to the number or threads (or the number of a
 #### More on threading
 
 The number of threads used can be set in the function call with the `threads=` options. By default it will be equal to `multiprocessing.cpu_count() * 5` or to the MAX_THREADS environment variable.
-In some case, threading can slow down your application. You can set threads to `0` to run the `tiler` outsize a loop.
+In some case, threading can slow down your application. You can set threads to `0` to run the tiler in a loop without using a ThreadPool.
 
 ## Example
 

@@ -70,7 +70,7 @@ def mosaic_tiler(
         and MUST return a tuple with tile data and mask
         e.g:
         def tiler(asset: str, x: int, y: int, z: int, **kwargs) -> Tuple[numpy.ndarray, numpy.ndarray]:
-            with COGReader(assert) as cog:
+            with COGReader(asset) as cog:
                 return cog.tile(x, y, z, **kwargs)
     pixel_selection: MosaicMethod, optional
         Instance of MosaicMethodBase class.
