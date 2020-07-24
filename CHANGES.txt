@@ -1,3 +1,11 @@
+0.0.1dev5 (2020-07-24)
+----------------------
+- Threading is optional (#13 and #15, co-author with @kylebarron)
+- Update for rio-tiler 2.0b1
+- add logging for errors
+- switch to python 3 and use type hints
+- add benchmark
+
 0.0.1dev4 (2020-04-22)
 ----------------------
 - allow rio-tiler >=1.2
