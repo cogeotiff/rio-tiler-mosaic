@@ -1,14 +1,11 @@
 """rio-tiler-mosaic.methods abc class."""
 
 import abc
+
 import numpy
 
-# Python 2 and 3 compat
-# see https://stackoverflow.com/a/38668373
-ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
 
-
-class MosaicMethodBase(ABC):
+class MosaicMethodBase(abc.ABC):
     """Abstract base class for rio-tiler-mosaic methods objects."""
 
     def __init__(self):

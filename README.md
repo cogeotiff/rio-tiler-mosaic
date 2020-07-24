@@ -54,16 +54,21 @@ Returns:
 #### Examples
 
 ```python
-from rio_tiler.main import tile as cogTiler
+from rio_tiler.io import COGReader
 from rio_tiler_mosaic.mosaic import mosaic_tiler
 from rio_tiler_mosaic.methods import defaults
+
+
+def tiler(src_path: str, *args, **kwargs) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    with COGReader(src_path) as cog:
+        return cog.tile(*args, **kwargs)
 
 assets = ["mytif1.tif", "mytif2.tif", "mytif3.tif"]
 tile = (1000, 1000, 9)
 x, y, z = tile
 
 # Use Default First value method
-mosaic_tiler(assets, x, y, z, cogTiler)
+mosaic_tiler(assets, x, y, z, tiler)
 
 # Use Highest value: defaults.HighestMethod()
 mosaic_tiler(
@@ -71,7 +76,7 @@ mosaic_tiler(
     x,
     y,
     z,
-    cogTiler,
+    tiler,
     pixel_selection=defaults.HighestMethod()
 )
 
@@ -81,7 +86,7 @@ mosaic_tiler(
     x,
     y,
     z,
-    cogTiler,
+    tiler,
     pixel_selection=defaults.LowestMethod()
 )
 ```
@@ -119,8 +124,12 @@ for chunks in _chunks(assets, chunk_size):
     with futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
         future_tasks = [executor.submit(_tiler, asset) for asset in chunks]
 ```
+By default the chunck_size is equal to the number or threads (or the number of assets if no threads=0)
 
-By default the chunck_size is equal to max_threads ([default](https://github.com/cogeotiff/rio-tiler-mosaic/blob/4a4d188a9b0fefbf244af3cf52cf2695db7e0cf1/rio_tiler_mosaic/mosaic.py#L77))
+#### More on threading
+
+The number of threads used can be set in the function call with the `threads=` options. By default it will be equal to `multiprocessing.cpu_count() * 5` or to the MAX_THREADS environment variable.
+In some case, threading can slow down your application. You can set threads to `0` to run the `tiler` outsize a loop.
 
 ## Example
 

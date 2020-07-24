@@ -1,22 +1,22 @@
 """Setup for rio-tiler-mosaic."""
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 # Runtime requirements.
-inst_reqs = ["rio-tiler>=1.2"]
+inst_reqs = ["rio-tiler~=2.0a"]
 
 extra_reqs = {
-    "test": ["pytest", "pytest-cov"],
-    "dev": ["pytest", "pytest-cov", "pre-commit"],
+    "test": ["pytest", "pytest-cov", "pytest-benchmark"],
+    "dev": ["pytest", "pytest-cov", "pytest-benchmark", "pre-commit"],
 }
-
 
 with open("README.md") as f:
     long_description = f.read()
 
 setup(
     name="rio-tiler-mosaic",
-    version="0.0.1dev4",
+    version="0.0.1dev5",
+    python_requires=">=3",
     long_description=long_description,
     long_description_content_type="text/markdown",
     description=u"""A rio-tiler plugin to create mosaic tiles.""",
@@ -24,7 +24,6 @@ setup(
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
         "Topic :: Scientific/Engineering :: GIS",
     ],

@@ -1,26 +1,30 @@
 """rio_tiler_mosaic.mosaic: create tile from multiple assets."""
 
-import os
-import multiprocessing
-from functools import partial
+import logging
 from concurrent import futures
+from functools import partial
+from typing import Callable, Optional, Sequence, Tuple, Union
 
 import numpy
 
+from rio_tiler.constants import MAX_THREADS
 from rio_tiler.utils import _chunks
-
 from rio_tiler_mosaic.methods.base import MosaicMethodBase
 from rio_tiler_mosaic.methods.defaults import FirstMethod
 
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+TaskType = Union[partial, futures.Future]
 
-def _filter_futures(tasks):
+
+def _filter_tasks(tasks: Sequence[TaskType]):
     """
-    Filter future task to remove Exceptions.
+    Filter tasks to remove Exceptions.
 
     Attributes
     ----------
-    tasks : list
-        List of 'concurrent.futures._base.Future'
+    tasks : list or tuple
+        Sequence of 'concurrent.futures._base.Future' or 'partial'
 
     Yields
     ------
@@ -29,43 +33,57 @@ def _filter_futures(tasks):
     """
     for future in tasks:
         try:
-            yield future.result()
-        except Exception:
+            if isinstance(future, futures.Future):
+                yield future.result()
+            else:
+                yield future()
+        except Exception as err:
+            logging.error(err)
             pass
 
 
 def mosaic_tiler(
-    assets,
-    tile_x,
-    tile_y,
-    tile_z,
-    tiler,
-    pixel_selection=None,
-    chunk_size=None,
-    **kwargs
-):
+    assets: Sequence[str],
+    tile_x: int,
+    tile_y: int,
+    tile_z: int,
+    tiler: Callable,
+    pixel_selection: Optional[MosaicMethodBase] = None,
+    chunk_size: Optional[int] = None,
+    threads: int = MAX_THREADS,
+    **kwargs,
+) -> Tuple[numpy.ndarray, numpy.ndarray]:
     """
     Create mercator tile from multiple observations.
 
     Attributes
     ----------
-    assets : list, tuple
-        List of rio-tiler compatible sceneid or url
-    tile_x : int
+    assets: list or tuple
+        List of tiler compatible asset.
+    tile_x: int
         Mercator tile X index.
-    tile_y : int
+    tile_y: int
         Mercator tile Y index.
-    tile_z : int
+    tile_z: int
         Mercator tile ZOOM level.
-    tiler: function
-        Rio-tiler's tiler function (e.g rio_tiler.landsat8.tile)
+    tiler: callable
+        tiler function. The function MUST take asset, x, y, z, **kwargs as arguments,
+        and MUST return a tuple with tile data and mask
+        e.g:
+        def tiler(asset: str, x: int, y: int, z: int, **kwargs) -> Tuple[numpy.ndarray, numpy.ndarray]:
+            with COGReader(assert) as cog:
+                return cog.tile(x, y, z, **kwargs)
     pixel_selection: MosaicMethod, optional
         Instance of MosaicMethodBase class.
         default: "rio_tiler_mosaic.methods.defaults.FirstMethod".
     chunk_size: int, optional
-        Control the number of asset to process per loop (default = MAX_THREADS).
+        Control the number of asset to process per loop (default = threads).
+    threads: int, optional
+        Number of threads to use. If <=1, runs single threaded without an event
+        loop. By default reads from the MAX_THREADS environment variable, and if
+        not found defaults to multiprocessing.cpu_count() * 5.
     kwargs: dict, optional
-        Rio-tiler tiler module specific options.
+        tiler specific options.
 
     Returns
     -------
@@ -82,16 +100,25 @@ def mosaic_tiler(
             "'rio_tiler_mosaic.methods.base.MosaicMethodBase'"
         )
 
-    _tiler = partial(tiler, tile_x=tile_x, tile_y=tile_y, tile_z=tile_z, **kwargs)
-    max_threads = int(os.environ.get("MAX_THREADS", multiprocessing.cpu_count() * 5))
     if not chunk_size:
-        chunk_size = max_threads
+        chunk_size = threads or len(assets)
+
+    tasks: Sequence[TaskType]
 
     for chunks in _chunks(assets, chunk_size):
-        with futures.ThreadPoolExecutor(max_workers=max_threads) as executor:
-            future_tasks = [executor.submit(_tiler, asset) for asset in chunks]
+        if threads:
+            with futures.ThreadPoolExecutor(max_workers=threads) as executor:
+                tasks = [
+                    executor.submit(tiler, asset, tile_x, tile_y, tile_z, **kwargs)
+                    for asset in chunks
+                ]
+        else:
+            tasks = [
+                partial(tiler, asset, tile_x, tile_y, tile_z, **kwargs)
+                for asset in chunks
+            ]
 
-        for t, m in _filter_futures(future_tasks):
+        for t, m in _filter_tasks(tasks):
             t = numpy.ma.array(t)
             t.mask = m == 0
 

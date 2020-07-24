@@ -12,7 +12,7 @@ common: &common
     - run:
         name: run pre-commit
         command: |
-          if [[ "$CIRCLE_JOB" == "python-3.6" ]]; then
+          if [[ "$CIRCLE_JOB" == "python-3.7" ]]; then
              ~/.local/bin/pre-commit run --all-files
           fi
     - run:
@@ -25,13 +25,6 @@ common: &common
         when: always
 
 jobs:
-  "python-2.7":
-    <<: *common
-    docker:
-      - image: circleci/python:2.7
-        environment:
-          - TOXENV=py27
-
   "python-3.6":
     <<: *common
     docker:
@@ -46,6 +39,20 @@ jobs:
       - image: circleci/python:3.7.2
         environment:
           - TOXENV=py37
+
+  benchmark:
+    docker:
+      - image: circleci/python:3.7.2
+    working_directory: ~/rio-tiler-mosaic
+    steps:
+     - checkout
+     - run: pip install -e .[test] --user
+     - run: |
+         python -m pytest \
+         --benchmark-only \
+         --benchmark-autosave \
+         --benchmark-columns 'min, max, mean, median' \
+         --benchmark-sort 'min'
 
   deploy:
       docker:
@@ -79,7 +86,7 @@ workflows:
   version: 2
   build_and_deploy:
     jobs:
-      - "python-2.7"
+      - benchmark
       - "python-3.6"
       - "python-3.7":
           filters:  # required since `deploy` has tag filters AND requires `build`
