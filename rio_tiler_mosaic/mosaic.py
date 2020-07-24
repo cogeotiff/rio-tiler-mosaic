@@ -2,8 +2,7 @@
 
 import logging
 from concurrent import futures
-from functools import partial
-from typing import Callable, Optional, Sequence, Tuple, Union
+from typing import Callable, Generator, Optional, Sequence, Tuple, Union
 
 import numpy
 
@@ -14,10 +13,10 @@ from rio_tiler_mosaic.methods.defaults import FirstMethod
 
 logger = logging.getLogger()
 logger.setLevel(logging.ERROR)
-TaskType = Union[partial, futures.Future]
+TaskType = Union[Generator[Callable, None, None], Sequence[futures.Future]]
 
 
-def _filter_tasks(tasks: Sequence[TaskType]):
+def _filter_tasks(tasks: TaskType):
     """
     Filter tasks to remove Exceptions.
 
@@ -36,7 +35,7 @@ def _filter_tasks(tasks: Sequence[TaskType]):
             if isinstance(future, futures.Future):
                 yield future.result()
             else:
-                yield future()
+                yield future
         except Exception as err:
             logging.error(err)
             pass
@@ -103,7 +102,7 @@ def mosaic_tiler(
     if not chunk_size:
         chunk_size = threads or len(assets)
 
-    tasks: Sequence[TaskType]
+    tasks: TaskType
 
     for chunks in _chunks(assets, chunk_size):
         if threads:
@@ -113,10 +112,7 @@ def mosaic_tiler(
                     for asset in chunks
                 ]
         else:
-            tasks = [
-                partial(tiler, asset, tile_x, tile_y, tile_z, **kwargs)
-                for asset in chunks
-            ]
+            tasks = (tiler(asset, tile_x, tile_y, tile_z, **kwargs) for asset in chunks)
 
         for t, m in _filter_tasks(tasks):
             t = numpy.ma.array(t)
