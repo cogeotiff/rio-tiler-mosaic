@@ -1,3 +1,6 @@
+
+This is now directly integrated in rio-tiler~=2.0: https://github.com/cogeotiff/rio-tiler/pull/204
+
 # rio-tiler-mosaic
 
 [![Packaging status](https://badge.fury.io/py/rio-tiler-mosaic.svg)](https://badge.fury.io/py/rio-tiler-mosaic)
@@ -7,7 +10,6 @@
 A rio-tiler plugin for creating tiles from multiple observations.
 
 ![](https://user-images.githubusercontent.com/10407788/57466726-304f5880-724f-11e9-9969-bec4ce940e07.png)
-
 
 ## Install
 
